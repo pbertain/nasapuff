@@ -1,0 +1,38 @@
+# NASAPuff Deployment Configuration
+# These variables are used by the inventory.yml file
+
+# Common deployment settings (reused for all hosts)
+NASAPUFF_USER: ansible
+NASAPUFF_SSH_KEY: "~/.ssh/keys/nirdclub__id_ed25519"
+
+# Host configurations
+# Option 1: Single host deployment (currently disabled)
+# NASAPUFF_HOST: host77.nird.club
+
+# Option 2: Multiple hosts (ENABLED)
+NASAPUFF_HOST_1: host77.nird.club
+NASAPUFF_HOST_2: host78.nird.club
+
+# Option 3: Comma-separated hosts (not yet implemented)
+# NASAPUFF_HOSTS: host77.nird.club,host78.nird.club
+
+# NASA API Credentials
+NASA_API_KEY: "O0OVNYOxLO1QIe8eb31Kaf1LYbR6MRtqMNaoFm2f"
+
+# Application settings
+APP_DEBUG: "false"
+FLASK_ENV: "production"
+NASAPUFF_APP_PORT: 48080
+
+# Domain configuration
+NASAPUFF_DOMAIN: nasa.puhfph.cloud
+NASAPUFF_SSL_EMAIL: admin@nasa.puhfph.cloud
+
+# Additional domains
+NASAPUFF_ADDITIONAL_DOMAINS:
+  - www.nasa.puhfph.cloud
+  - nasa.cloud-puff.net
+  - nasapuff.com
+  - nasapuff.space
+  - www.nasapuff.com
+  - www.nasapuff.space 

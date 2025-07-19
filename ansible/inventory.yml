@@ -2,11 +2,14 @@ all:
   children:
     nasapuff_servers:
       hosts:
-        nasapuff-web:
-          ansible_host: 192.168.3.96
-          ansible_user: root
-          ansible_ssh_private_key_file: ~/.ssh/id_rsa
-          # Add your SSH key path here
+        nasapuff-host77:
+          ansible_host: host77.nird.club
+          ansible_user: ansible
+          ansible_ssh_private_key_file: ~/.ssh/keys/nirdclub__id_ed25519
+        nasapuff-host78:
+          ansible_host: host78.nird.club
+          ansible_user: ansible
+          ansible_ssh_private_key_file: ~/.ssh/keys/nirdclub__id_ed25519
       vars:
         nasapuff_domain: nasa.puhfph.cloud
         nasapuff_ssl_email: admin@nasa.puhfph.cloud

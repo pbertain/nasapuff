@@ -1,5 +1,5 @@
 ---
-- name: Deploy NASAPuff Flask Application
+- name: Deploy NASAPuff Flask Application to Nird Club
   hosts: nasapuff_servers
   become: yes
   gather_facts: yes
@@ -11,6 +11,14 @@
         cache_valid_time: 3600
       when: ansible_os_family == "Debian"
 
+    - name: Display deployment info
+      debug:
+        msg: |
+          Deploying NASAPuff to {{ inventory_hostname }}
+          Domain: {{ nasapuff_domain }}
+          Port: {{ nasapuff_app_port }}
+          User: {{ nasapuff_app_user }}
+
   roles:
     - common
     - nasapuff_app
@@ -19,10 +27,20 @@
     - monitoring
 
   post_tasks:
+    - name: Verify deployment
+      uri:
+        url: "http://localhost:{{ nasapuff_app_port }}/health"
+        method: GET
+        status_code: 200
+      register: health_check
+      retries: 3
+      delay: 10
+      until: health_check.status == 200
+
     - name: Display deployment summary
       debug:
         msg: |
-          NASAPuff deployment completed successfully!
+          NASAPuff deployment completed successfully on {{ inventory_hostname }}!
           
           Application URL: https://{{ nasapuff_domain }}
           Application Port: {{ nasapuff_app_port }}
@@ -33,4 +51,6 @@
           - journalctl -u nasapuff-web -f
           
           To view logs:
-          - tail -f {{ nasapuff_log_dir }}/app.log 
+          - tail -f {{ nasapuff_log_dir }}/app.log
+          
+          Health check: {{ health_check.status }} 

@@ -50,4 +50,12 @@ security_settings:
     - 80
     - 443
   fail2ban_enabled: true
-  ufw_enabled: true 
+  ufw_enabled: true
+
+# Nird Club specific settings
+nirdclub_settings:
+  user: ansible
+  ssh_key: "~/.ssh/keys/nirdclub__id_ed25519"
+  hosts:
+    - host77.nird.club
+    - host78.nird.club 
