@@ -1,0 +1,15 @@
+[Unit]
+Description=NASAPuff Web Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/var/bertain-cdn/nasapuff/run_nasapuff.sh 
+
+[Install]
+WantedBy=multi-user.target
+

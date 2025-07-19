@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASAPuff - Error</title>
+    <link rel="icon" href="https://api.nasa.gov/assets/img/favicons/favicon-192.png">
+    <style>
+        body {
+            background-color: #333333;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .error-container {
+            max-width: 600px;
+            padding: 40px;
+            border: 2px solid #b22234;
+            border-radius: 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        .error-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #b22234;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            background-color: rgba(178, 34, 52, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .back-link {
+            margin-top: 30px;
+        }
+        .back-link a {
+            color: #1B3C8C;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid #1B3C8C;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .back-link a:hover {
+            background-color: #1B3C8C;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">🚀</div>
+        <h1>Houston, We Have a Problem</h1>
+        <div class="error-message">
+            <p><strong>Error:</strong> {{ error }}</p>
+            <p>Our team has been notified and is working to resolve this issue.</p>
+        </div>
+        <div class="back-link">
+            <a href="/">Return to NASAPuff</a>
+        </div>
+    </div>
+</body>
+</html> 

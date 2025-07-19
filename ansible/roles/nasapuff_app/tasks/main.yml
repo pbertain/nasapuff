@@ -1,0 +1,83 @@
+---
+- name: Copy Flask application files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ nasapuff_flask_dir }}/"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0644'
+  loop:
+    - nasapuff_flask.py
+    - templates/index.html
+    - public/css/main.css
+
+- name: Create Python virtual environment
+  pip:
+    virtualenv: "{{ nasapuff_venv_dir }}"
+    virtualenv_command: python3 -m venv
+    requirements: requirements.txt
+    state: present
+  become_user: "{{ nasapuff_app_user }}"
+
+- name: Copy requirements.txt
+  template:
+    src: requirements.txt.j2
+    dest: "{{ nasapuff_flask_dir }}/requirements.txt"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0644'
+
+- name: Install Python packages in virtual environment
+  pip:
+    virtualenv: "{{ nasapuff_venv_dir }}"
+    requirements: "{{ nasapuff_flask_dir }}/requirements.txt"
+    state: present
+  become_user: "{{ nasapuff_app_user }}"
+
+- name: Create improved Flask application
+  template:
+    src: nasapuff_flask.py.j2
+    dest: "{{ nasapuff_flask_dir }}/nasapuff_flask.py"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Create WSGI entry point
+  template:
+    src: wsgi.py.j2
+    dest: "{{ nasapuff_flask_dir }}/wsgi.py"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Create systemd service file
+  template:
+    src: nasapuff-web.service.j2
+    dest: /etc/systemd/system/nasapuff-web.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart nasapuff-web
+
+- name: Create environment file
+  template:
+    src: nasapuff.env.j2
+    dest: "{{ nasapuff_base_dir }}/.env"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0600'
+
+- name: Create startup script
+  template:
+    src: run_nasapuff.sh.j2
+    dest: "{{ nasapuff_base_dir }}/run_nasapuff.sh"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Enable and start nasapuff-web service
+  systemd:
+    name: nasapuff-web
+    state: started
+    enabled: yes
+    daemon_reload: yes 

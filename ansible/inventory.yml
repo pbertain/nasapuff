@@ -1,0 +1,20 @@
+all:
+  children:
+    nasapuff_servers:
+      hosts:
+        nasapuff-web:
+          ansible_host: 192.168.3.96
+          ansible_user: root
+          ansible_ssh_private_key_file: ~/.ssh/id_rsa
+          # Add your SSH key path here
+      vars:
+        nasapuff_domain: nasa.puhfph.cloud
+        nasapuff_ssl_email: admin@nasa.puhfph.cloud
+        nasapuff_app_port: 48080
+        nasapuff_app_user: nasapuff
+        nasapuff_app_group: nasapuff
+        nasapuff_base_dir: /var/bertain-cdn/nasapuff
+        nasapuff_flask_dir: "{{ nasapuff_base_dir }}/flask"
+        nasapuff_venv_dir: "{{ nasapuff_flask_dir }}/venv-nasapuff"
+        nasapuff_log_dir: /var/log/nasapuff
+        nasapuff_backup_dir: /var/backups/nasapuff 

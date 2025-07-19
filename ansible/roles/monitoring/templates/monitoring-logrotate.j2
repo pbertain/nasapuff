@@ -1,0 +1,19 @@
+{{ nasapuff_log_dir }}/monitoring/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 {{ nasapuff_app_user }} {{ nasapuff_app_group }}
+}
+
+{{ nasapuff_backup_dir }}/backup.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 {{ nasapuff_app_user }} {{ nasapuff_app_group }}
+} 

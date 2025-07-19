@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# NASAPuff Monitoring Script
+# This script monitors the application health and logs issues
+
+set -e
+
+# Configuration
+APP_NAME="nasapuff-web"
+LOG_FILE="{{ nasapuff_log_dir }}/monitoring/monitor.log"
+HEALTH_URL="http://localhost:{{ nasapuff_app_port }}/health"
+MAX_RETRIES=3
+RETRY_DELAY=5
+
+# Log function
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+}
+
+# Check if service is running
+check_service() {
+    if systemctl is-active --quiet "$APP_NAME"; then
+        log "INFO: $APP_NAME service is running"
+        return 0
+    else
+        log "ERROR: $APP_NAME service is not running"
+        return 1
+    fi
+}
+
+# Check application health endpoint
+check_health() {
+    local retries=0
+    while [ $retries -lt $MAX_RETRIES ]; do
+        if curl -f -s "$HEALTH_URL" > /dev/null 2>&1; then
+            log "INFO: Application health check passed"
+            return 0
+        else
+            retries=$((retries + 1))
+            log "WARNING: Health check failed (attempt $retries/$MAX_RETRIES)"
+            if [ $retries -lt $MAX_RETRIES ]; then
+                sleep $RETRY_DELAY
+            fi
+        fi
+    done
+    
+    log "ERROR: Application health check failed after $MAX_RETRIES attempts"
+    return 1
+}
+
+# Check disk space
+check_disk_space() {
+    local usage=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+    if [ "$usage" -gt 90 ]; then
+        log "ERROR: Disk usage is ${usage}%"
+        return 1
+    elif [ "$usage" -gt 80 ]; then
+        log "WARNING: Disk usage is ${usage}%"
+    else
+        log "INFO: Disk usage is ${usage}%"
+    fi
+    return 0
+}
+
+# Check memory usage
+check_memory() {
+    local mem_usage=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
+    if [ "$mem_usage" -gt 90 ]; then
+        log "ERROR: Memory usage is ${mem_usage}%"
+        return 1
+    elif [ "$mem_usage" -gt 80 ]; then
+        log "WARNING: Memory usage is ${mem_usage}%"
+    else
+        log "INFO: Memory usage is ${mem_usage}%"
+    fi
+    return 0
+}
+
+# Main monitoring logic
+main() {
+    log "INFO: Starting NASAPuff monitoring check"
+    
+    local errors=0
+    
+    # Check service status
+    if ! check_service; then
+        errors=$((errors + 1))
+    fi
+    
+    # Check application health
+    if ! check_health; then
+        errors=$((errors + 1))
+    fi
+    
+    # Check system resources
+    if ! check_disk_space; then
+        errors=$((errors + 1))
+    fi
+    
+    if ! check_memory; then
+        errors=$((errors + 1))
+    fi
+    
+    if [ $errors -eq 0 ]; then
+        log "INFO: All checks passed"
+        exit 0
+    else
+        log "ERROR: $errors check(s) failed"
+        exit 1
+    fi
+}
+
+# Run main function
+main "$@" 

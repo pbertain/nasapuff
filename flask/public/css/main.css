@@ -1,0 +1,94 @@
+body.main {
+    background-color: darkblue;
+    color: white;
+    font-family: "Georgia";
+    text-align: center;
+    font-size: 1.25em;
+}
+
+li.time_yel {
+    color: yellow;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+li.time_grn {
+    color: lightgreen;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+li.time_pnk {
+    color: pink;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+li.time_pur {
+    color: #AF69EE;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+p.time_yel {
+    color: yellow;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+p.time_grn {
+    color: lightgreen;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+p.time_pnk {
+    color: pink;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+p.small {
+    color: gray;
+    font-family: Courier;
+    font-size: 0.5em;
+    margin: 0;
+    padding: 0;
+}
+
+p.header {
+    color: white;
+    font-family: Courier;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+}
+
+a.main {
+    color: #0C0;
+    text-decoration:underline;
+    font-weight:normal;
+    font-size: 0.75em;
+}
+
+h1.main {
+    color: goldenrod;
+    font-family: "Georgia";
+    font-align: center;
+    font-size: 1em;
+}
+

@@ -1,0 +1,34 @@
+---
+- name: Create webroot directory for Let's Encrypt
+  file:
+    path: /var/www/html
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Check if SSL certificate exists
+  stat:
+    path: "{{ nginx_config.ssl_cert_path }}/fullchain.pem"
+  register: ssl_cert_check
+
+- name: Obtain SSL certificate with Let's Encrypt
+  command: certbot certonly --webroot -w /var/www/html -d {{ nasapuff_domain }} -d www.{{ nasapuff_domain }} --email {{ nasapuff_ssl_email }} --agree-tos --non-interactive
+  when: not ssl_cert_check.stat.exists
+  register: certbot_result
+  changed_when: certbot_result.rc == 0
+
+- name: Set up SSL certificate renewal
+  cron:
+    name: "Renew Let's Encrypt SSL certificate"
+    job: "certbot renew --quiet --no-self-upgrade"
+    hour: "2"
+    minute: "0"
+    user: root
+  when: ssl_cert_check.stat.exists
+
+- name: Test SSL certificate renewal
+  command: certbot renew --dry-run
+  register: certbot_test
+  changed_when: false
+  when: ssl_cert_check.stat.exists 

@@ -1,0 +1,54 @@
+[Unit]
+Description=NASAPuff Web Service
+After=network.target
+StartLimitIntervalSec=0
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User={{ nasapuff_app_user }}
+Group={{ nasapuff_app_group }}
+WorkingDirectory={{ nasapuff_flask_dir }}
+Environment=PATH={{ nasapuff_venv_dir }}/bin
+Environment=FLASK_ENV=production
+Environment=FLASK_APP=nasapuff_flask.py
+Environment=PYTHONPATH={{ nasapuff_flask_dir }}
+Environment=NASA_API_KEY={{ nasapuff_environment.NASA_API_KEY }}
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ nasapuff_log_dir }} {{ nasapuff_flask_dir }}
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nasapuff-web
+
+# Process management
+ExecStart={{ nasapuff_venv_dir }}/bin/gunicorn \
+    --bind 0.0.0.0:{{ nasapuff_app_port }} \
+    --workers 2 \
+    --worker-class gevent \
+    --worker-connections 1000 \
+    --max-requests 1000 \
+    --max-requests-jitter 100 \
+    --timeout 30 \
+    --keep-alive 2 \
+    --access-logfile {{ nasapuff_log_dir }}/gunicorn-access.log \
+    --error-logfile {{ nasapuff_log_dir }}/gunicorn-error.log \
+    --log-level info \
+    wsgi:app
+
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target 

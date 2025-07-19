@@ -1,0 +1,99 @@
+# NASAPuff Nginx Configuration
+# Add the Forwarded header syntax
+include includes/proxy-add-forwarded.conf;
+
+# Custom log format for NASAPuff
+log_format nasapuff-vhost 'date="$date_local" vhost="$host" sip="$server_addr" port="$server_port" proto="$server_protocol" method="$request_method" url="$uri" rcode="$status" rsize="$bytes_sent" rtime="$request_time" ua="$http_user_agent" forwarded="$proxy_add_forwarded"';
+
+# HTTP server block (redirect to HTTPS)
+server {
+    listen 80;
+    server_name {{ nginx_config.server_names | join(' ') }};
+
+    include includes/standard-http.conf;
+    include includes/blockips.conf;
+    
+    # Redirect all HTTP traffic to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server block
+server {
+    listen 443 ssl http2;
+    server_name {{ nginx_config.server_names | join(' ') }};
+    
+    access_log /var/log/nginx/nasapuff_access.log nasapuff-vhost;
+    error_log /var/log/nginx/nasapuff_error.log;
+
+    # SSL Configuration
+    ssl_certificate {{ nginx_config.ssl_cert_path }}/fullchain.pem;
+    ssl_certificate_key {{ nginx_config.ssl_cert_path }}/privkey.pem;
+    ssl_trusted_certificate {{ nginx_config.ssl_cert_path }}/chain.pem;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self';" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Proxy configuration
+    location / {
+        proxy_pass http://{{ nginx_config.upstream_host }}:{{ nginx_config.upstream_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        
+        # Timeouts
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        
+        # Buffering
+        proxy_buffering on;
+        proxy_buffer_size 4k;
+        proxy_buffers 8 4k;
+        
+        # Custom header
+        add_header X-via "birdland-cdn/nasapuff/ansible-deployed";
+        
+        include includes/location-includes.conf;
+    }
+
+    # Health check endpoint
+    location /health {
+        proxy_pass http://{{ nginx_config.upstream_host }}:{{ nginx_config.upstream_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        access_log off;
+    }
+
+    # API endpoint
+    location /api/ {
+        proxy_pass http://{{ nginx_config.upstream_host }}:{{ nginx_config.upstream_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+    }
+
+    # Static files (if any)
+    location /static/ {
+        alias {{ nasapuff_flask_dir }}/public/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    include includes/blockips.conf;
+    include includes/letsencrypt.conf;
+    include includes/ssl.conf;
+    include includes/standard-ssl.conf;
+} 

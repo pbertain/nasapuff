@@ -1,0 +1,53 @@
+# Common variables for all hosts
+ansible_python_interpreter: /usr/bin/python3
+
+# System packages
+system_packages:
+  - python3
+  - python3-pip
+  - python3-venv
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - curl
+  - git
+  - supervisor
+  - logrotate
+
+# Python packages for the Flask app
+python_packages:
+  - flask==3.0.3
+  - requests==2.31.0
+  - apscheduler==3.10.4
+  - gunicorn==21.2.0
+  - gevent==23.9.1
+
+# Environment variables
+nasapuff_environment:
+  FLASK_ENV: production
+  FLASK_APP: nasapuff_flask.py
+  PYTHONPATH: "{{ nasapuff_flask_dir }}"
+  NASA_API_KEY: "O0OVNYOxLO1QIe8eb31Kaf1LYbR6MRtqMNaoFm2f"
+
+# Nginx configuration
+nginx_config:
+  server_names:
+    - nasa.puhfph.cloud
+    - www.nasa.puhfph.cloud
+    - nasa.cloud-puff.net
+    - nasapuff.com
+    - nasapuff.space
+    - www.nasapuff.com
+    - www.nasapuff.space
+  ssl_cert_path: /etc/letsencrypt/live/nasa.puhfph.cloud
+  upstream_port: "{{ nasapuff_app_port }}"
+  upstream_host: 127.0.0.1
+
+# Security settings
+security_settings:
+  firewall_ports:
+    - 22
+    - 80
+    - 443
+  fail2ban_enabled: true
+  ufw_enabled: true 

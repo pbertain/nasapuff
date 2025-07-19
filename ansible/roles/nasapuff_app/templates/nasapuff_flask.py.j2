@@ -1,0 +1,154 @@
+import os
+import logging
+from flask import Flask, render_template, jsonify
+import requests
+from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
+import time
+from datetime import datetime
+
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('{{ nasapuff_log_dir }}/app.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this')
+
+# Configuration
+API_KEY = os.getenv('NASA_API_KEY', 'O0OVNYOxLO1QIe8eb31Kaf1LYbR6MRtqMNaoFm2f')
+NASA_API_URL = "https://api.nasa.gov/planetary/apod"
+current_apod_data = None
+last_update = None
+update_interval = 3 * 60 * 60  # 3 hours in seconds
+
+def fetch_apod_data(api_key):
+    """Fetch data from NASA's APOD API with error handling"""
+    try:
+        params = {
+            'api_key': api_key,
+            'count': 1
+        }
+        response = requests.get(NASA_API_URL, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        if isinstance(data, list) and len(data) > 0:
+            return data[0]
+        elif isinstance(data, dict):
+            return data
+        else:
+            logger.error("Unexpected API response format")
+            return None
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error fetching APOD data: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error fetching APOD data: {e}")
+        return None
+
+def update_image():
+    """Update the current APOD data"""
+    global current_apod_data, last_update
+    
+    try:
+        apod_data = fetch_apod_data(API_KEY)
+        if apod_data:
+            current_apod_data = apod_data
+            last_update = datetime.now()
+            logger.info(f"Updated APOD data: {apod_data.get('title', 'Unknown')}")
+        else:
+            logger.warning("Failed to fetch APOD data")
+    except Exception as e:
+        logger.error(f"Error in update_image: {e}")
+
+def should_update():
+    """Check if we should update the APOD data"""
+    global last_update
+    if last_update is None:
+        return True
+    
+    time_since_update = (datetime.now() - last_update).total_seconds()
+    return time_since_update >= update_interval
+
+@app.route("/")
+def home():
+    """Render home page with APOD data"""
+    try:
+        # Update data if needed
+        if should_update():
+            update_image()
+        
+        if current_apod_data is None:
+            # Fallback to direct API call if no cached data
+            apod_data = fetch_apod_data(API_KEY)
+            if apod_data is None:
+                return render_template('error.html', error="Unable to fetch NASA data"), 500
+        else:
+            apod_data = current_apod_data
+        
+        return render_template('index.html', apod=apod_data)
+        
+    except Exception as e:
+        logger.error(f"Error in home route: {e}")
+        return render_template('error.html', error="An unexpected error occurred"), 500
+
+@app.route("/health")
+def health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'last_update': last_update.isoformat() if last_update else None
+    })
+
+@app.route("/api/apod")
+def api_apod():
+    """API endpoint for APOD data"""
+    try:
+        if should_update():
+            update_image()
+        
+        if current_apod_data is None:
+            return jsonify({'error': 'Unable to fetch data'}), 500
+        
+        return jsonify(current_apod_data)
+        
+    except Exception as e:
+        logger.error(f"Error in API endpoint: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('error.html', error="Page not found"), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('error.html', error="Internal server error"), 500
+
+if __name__ == "__main__":
+    # Initialize scheduler
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=update_image, trigger="interval", hours=3)
+    scheduler.start()
+    
+    # Initial data fetch
+    update_image()
+    
+    # Run the app
+    app.run(
+        host='0.0.0.0',
+        port={{ nasapuff_app_port }},
+        debug=False,
+        use_reloader=False  # Important: Disable reloader if running with scheduler
+    ) 

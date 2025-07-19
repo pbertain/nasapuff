@@ -1,0 +1,8 @@
+# Ansible requirements file
+# Add any external roles here if needed
+
+# Example:
+# - src: geerlingguy.nginx
+#   version: 2.0.0
+# - src: geerlingguy.certbot
+#   version: 1.0.0 

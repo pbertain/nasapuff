@@ -1,0 +1,36 @@
+---
+- name: Deploy NASAPuff Flask Application
+  hosts: nasapuff_servers
+  become: yes
+  gather_facts: yes
+  
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+  roles:
+    - common
+    - nasapuff_app
+    - nginx
+    - ssl
+    - monitoring
+
+  post_tasks:
+    - name: Display deployment summary
+      debug:
+        msg: |
+          NASAPuff deployment completed successfully!
+          
+          Application URL: https://{{ nasapuff_domain }}
+          Application Port: {{ nasapuff_app_port }}
+          Log Directory: {{ nasapuff_log_dir }}
+          
+          To check application status:
+          - systemctl status nasapuff-web
+          - journalctl -u nasapuff-web -f
+          
+          To view logs:
+          - tail -f {{ nasapuff_log_dir }}/app.log 

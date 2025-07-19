@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASAPuff Daily Images</title>
+    <link rel="icon" href="https://api.nasa.gov/assets/img/favicons/favicon-192.png">
+    <style>
+        /* Define custom colors */
+        :root {
+            --np-nasa-blue: #1B3C8C; /* Muted blue */
+            --np-muted-red: #b22234; /* Muted red */
+            --np-muted-grey: #666; /* Muted grey */
+            --np-white: #fff; /* White */
+        }
+
+        /* General Styles */
+        body {
+            background-color: #333333;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        img {
+            width: 500px;
+            height: auto;
+            border-radius: 15px 50px;
+	    border: 5px solid var(--np-white); /* Innermost blue border */
+            box-shadow:
+                0 0 0 5px var(--np-nasa-blue),      /* Middle white border */
+                0 0 0 10px var(--np-muted-grey), /* Outermost red border */
+                0 0 0 15px var(--np-muted-red); /* Outermost red border */
+            transition: clip-path 0.3s ease-in-out; /* Smooth effect */
+        }
+        .explanation {
+            max-width: 650px; /* slightly wider than the previous max-width */
+            margin: 0 auto;  /* centers the div */
+            text-align: justify; /* justifies text on both sides within the div */
+            padding: 0 30px; /* increases padding to the left and right */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><img src="https://api.nasa.gov/assets/img/favicons/favicon-192.png" alt="NASA Logo" style="height: 100px;width: 100px">NASAPuff Daily Images</h1>
+    </header>
+    <br><br><br>
+    <a href="{{ apod['hdurl'] }}" target="_blank"><img src="{{ apod['url'] }}" alt="{{ apod['title'] }}"></a>
+    <p><strong>{{ apod['date'] }} - {{ apod['title'] }}</strong></p>
+    <div class="explanation">
+        <p>{{ apod['explanation'] }}</p>
+    </div>
+    <p><a href="{{ apod['hdurl'] }}" target="_blank">View in High Definition</a></p>
+</body>
+</html>

@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# NASAPuff Startup Script
+# This script is used for development/testing purposes
+# For production, use the systemd service
+
+set -e
+
+# Configuration
+RUN_IP="0.0.0.0"
+RUN_PORT="{{ nasapuff_app_port }}"
+BASEDIR="{{ nasapuff_base_dir }}"
+BINDIR="{{ nasapuff_venv_dir }}/bin"
+PYTHON="${BINDIR}/python3"
+ACTIVATOR="${BINDIR}/activate"
+TEMPLATE_DIR="{{ nasapuff_flask_dir }}/templates"
+FLASK="${BINDIR}/flask"
+
+# Environment variables
+export FLASK_ENV=production
+export FLASK_APP=nasapuff_flask.py
+export PYTHONPATH="{{ nasapuff_flask_dir }}"
+
+# Load environment file if it exists
+if [ -f "${BASEDIR}/.env" ]; then
+    source "${BASEDIR}/.env"
+fi
+
+# Change to application directory
+cd "${BASEDIR}/flask"
+
+# Activate virtual environment
+source "${ACTIVATOR}"
+
+# Check if we should use gunicorn or flask run
+if [ "$1" = "gunicorn" ]; then
+    echo "Starting NASAPuff with Gunicorn..."
+    exec "${BINDIR}/gunicorn" \
+        --bind "${RUN_IP}:${RUN_PORT}" \
+        --workers 2 \
+        --worker-class gevent \
+        --worker-connections 1000 \
+        --max-requests 1000 \
+        --max-requests-jitter 100 \
+        --timeout 30 \
+        --keep-alive 2 \
+        --access-logfile "{{ nasapuff_log_dir }}/gunicorn-access.log" \
+        --error-logfile "{{ nasapuff_log_dir }}/gunicorn-error.log" \
+        --log-level info \
+        wsgi:app
+else
+    echo "Starting NASAPuff with Flask development server..."
+    exec "${FLASK}" run --host "${RUN_IP}" --port "${RUN_PORT}"
+fi 

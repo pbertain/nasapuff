@@ -1,0 +1,11 @@
+---
+- name: restart nasapuff-web
+  systemd:
+    name: nasapuff-web
+    state: restarted
+    daemon_reload: yes
+
+- name: reload nasapuff-web
+  systemd:
+    name: nasapuff-web
+    state: reloaded 

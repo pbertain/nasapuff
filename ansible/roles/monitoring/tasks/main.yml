@@ -1,0 +1,58 @@
+---
+- name: Create monitoring directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+  loop:
+    - "{{ nasapuff_log_dir }}/monitoring"
+    - "{{ nasapuff_backup_dir }}/logs"
+
+- name: Create logrotate configuration for monitoring
+  template:
+    src: monitoring-logrotate.j2
+    dest: /etc/logrotate.d/nasapuff-monitoring
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create monitoring script
+  template:
+    src: monitor-nasapuff.sh.j2
+    dest: "{{ nasapuff_base_dir }}/monitor-nasapuff.sh"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Set up monitoring cron job
+  cron:
+    name: "Monitor NASAPuff application"
+    job: "{{ nasapuff_base_dir }}/monitor-nasapuff.sh"
+    minute: "*/5"
+    user: "{{ nasapuff_app_user }}"
+
+- name: Create health check script
+  template:
+    src: health-check.sh.j2
+    dest: "{{ nasapuff_base_dir }}/health-check.sh"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Set up backup script
+  template:
+    src: backup-nasapuff.sh.j2
+    dest: "{{ nasapuff_base_dir }}/backup-nasapuff.sh"
+    owner: "{{ nasapuff_app_user }}"
+    group: "{{ nasapuff_app_group }}"
+    mode: '0755'
+
+- name: Set up daily backup cron job
+  cron:
+    name: "Backup NASAPuff application"
+    job: "{{ nasapuff_base_dir }}/backup-nasapuff.sh"
+    hour: "3"
+    minute: "0"
+    user: "{{ nasapuff_app_user }}" 

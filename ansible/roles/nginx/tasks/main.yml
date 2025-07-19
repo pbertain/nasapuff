@@ -1,0 +1,71 @@
+---
+- name: Create nginx configuration directory
+  file:
+    path: /etc/nginx/sites-available
+    state: directory
+    mode: '0755'
+  when: ansible_os_family == "Debian"
+
+- name: Create nginx sites-enabled directory
+  file:
+    path: /etc/nginx/sites-enabled
+    state: directory
+    mode: '0755'
+  when: ansible_os_family == "Debian"
+
+- name: Create nginx includes directory
+  file:
+    path: /etc/nginx/includes
+    state: directory
+    mode: '0755'
+  when: ansible_os_family == "Debian"
+
+- name: Copy nginx includes
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/nginx/includes/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - proxy-add-forwarded.conf
+    - standard-http.conf
+    - standard-ssl.conf
+    - ssl.conf
+    - letsencrypt.conf
+    - blockips.conf
+    - location-includes.conf
+  notify: reload nginx
+
+- name: Create nginx site configuration
+  template:
+    src: nasapuff-nginx.conf.j2
+    dest: /etc/nginx/sites-available/nasapuff
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/nasapuff
+    dest: /etc/nginx/sites-enabled/nasapuff
+    state: link
+  notify: reload nginx
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Test nginx configuration
+  command: nginx -t
+  register: nginx_test
+  changed_when: false
+
+- name: Start and enable nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes 

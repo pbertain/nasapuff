@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# NASAPuff Backup Script
+# This script creates daily backups of the application
+
+set -e
+
+# Configuration
+BACKUP_DIR="{{ nasapuff_backup_dir }}"
+APP_DIR="{{ nasapuff_flask_dir }}"
+LOG_DIR="{{ nasapuff_log_dir }}"
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_NAME="nasapuff_backup_$DATE.tar.gz"
+LOG_FILE="$BACKUP_DIR/backup.log"
+
+# Log function
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+}
+
+# Create backup directory if it doesn't exist
+mkdir -p "$BACKUP_DIR"
+
+# Start backup
+log "INFO: Starting NASAPuff backup"
+
+# Create backup archive
+if tar -czf "$BACKUP_DIR/$BACKUP_NAME" \
+    -C "$(dirname "$APP_DIR")" \
+    "$(basename "$APP_DIR")" \
+    -C "$(dirname "$LOG_DIR")" \
+    "$(basename "$LOG_DIR")" \
+    /etc/systemd/system/nasapuff-web.service \
+    /etc/nginx/sites-available/nasapuff \
+    /etc/nginx/includes/ 2>/dev/null; then
+    
+    log "SUCCESS: Backup created: $BACKUP_NAME"
+    
+    # Calculate backup size
+    BACKUP_SIZE=$(du -h "$BACKUP_DIR/$BACKUP_NAME" | cut -f1)
+    log "INFO: Backup size: $BACKUP_SIZE"
+    
+    # Remove old backups (keep last 7 days)
+    find "$BACKUP_DIR" -name "nasapuff_backup_*.tar.gz" -mtime +7 -delete
+    log "INFO: Cleaned up old backups"
+    
+    # Verify backup integrity
+    if tar -tzf "$BACKUP_DIR/$BACKUP_NAME" >/dev/null 2>&1; then
+        log "SUCCESS: Backup integrity verified"
+        exit 0
+    else
+        log "ERROR: Backup integrity check failed"
+        exit 1
+    fi
+else
+    log "ERROR: Failed to create backup"
+    exit 1
+fi 

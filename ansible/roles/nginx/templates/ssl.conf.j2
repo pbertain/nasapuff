@@ -1,0 +1,4 @@
+# SSL configuration
+ssl_certificate {{ nginx_config.ssl_cert_path }}/fullchain.pem;
+ssl_certificate_key {{ nginx_config.ssl_cert_path }}/privkey.pem;
+ssl_trusted_certificate {{ nginx_config.ssl_cert_path }}/chain.pem; 
