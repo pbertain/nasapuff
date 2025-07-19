@@ -7,8 +7,6 @@ system_packages:
   - python3-pip
   - python3-venv
   - nginx
-  - certbot
-  - python3-certbot-nginx
   - curl
   - git
   - supervisor
@@ -42,15 +40,6 @@ nginx_config:
   ssl_cert_path: /etc/letsencrypt/live/nasa.puhfph.cloud
   upstream_port: "{{ nasapuff_app_port }}"
   upstream_host: 127.0.0.1
-
-# Security settings
-security_settings:
-  firewall_ports:
-    - 22
-    - 80
-    - 443
-  fail2ban_enabled: true
-  ufw_enabled: true
 
 # Nird Club specific settings
 nirdclub_settings:

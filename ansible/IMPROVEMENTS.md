@@ -35,7 +35,6 @@ This document outlines the improvements made to the original NASAPuff Flask appl
 - ✅ **Gunicorn WSGI server** for production performance
 - ✅ **Systemd service** with proper security settings
 - ✅ **Nginx reverse proxy** with SSL termination
-- ✅ **Let's Encrypt SSL certificates** with auto-renewal
 - ✅ **Security headers** (HSTS, CSP, X-Frame-Options)
 - ✅ **Process isolation** with systemd security features
 
@@ -43,14 +42,11 @@ This document outlines the improvements made to the original NASAPuff Flask appl
 
 **Original Issues:**
 - Running as root user
-- No firewall configuration
-- No intrusion prevention
 - Basic security
+- No process isolation
 
 **Improvements:**
 - ✅ **Dedicated application user** (`nasapuff`)
-- ✅ **UFW firewall** with minimal open ports
-- ✅ **fail2ban** for intrusion prevention
 - ✅ **Systemd security settings** (NoNewPrivileges, PrivateTmp)
 - ✅ **SSL/TLS encryption** with modern cipher suites
 - ✅ **Security headers** in Nginx configuration
@@ -131,21 +127,14 @@ This document outlines the improvements made to the original NASAPuff Flask appl
 
 ### Security Enhancements
 
-1. **Network Security:**
-   - Firewall configuration
-   - Intrusion detection
-   - Rate limiting
-   - IP blocking capabilities
-
-2. **Application Security:**
+1. **Application Security:**
    - Non-root execution
    - Process isolation
    - Input validation
    - Output sanitization
 
-3. **SSL/TLS Security:**
+2. **SSL/TLS Security:**
    - Modern cipher suites
-   - Certificate auto-renewal
    - HSTS headers
    - OCSP stapling
 
@@ -195,10 +184,6 @@ This document outlines the improvements made to the original NASAPuff Flask appl
    systemctl status nasapuff-web
    curl http://localhost:48080/health
    ```
-
-4. **Update DNS/SSL:**
-   - Update domain DNS if needed
-   - SSL certificates will be automatically obtained
 
 ### Rollback Procedure
 

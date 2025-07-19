@@ -25,7 +25,7 @@ server {
     access_log /var/log/nginx/nasapuff_access.log nasapuff-vhost;
     error_log /var/log/nginx/nasapuff_error.log;
 
-    # SSL Configuration
+    # SSL Configuration (handled by separate playbook)
     ssl_certificate {{ nginx_config.ssl_cert_path }}/fullchain.pem;
     ssl_certificate_key {{ nginx_config.ssl_cert_path }}/privkey.pem;
     ssl_trusted_certificate {{ nginx_config.ssl_cert_path }}/chain.pem;
@@ -93,7 +93,6 @@ server {
     }
 
     include includes/blockips.conf;
-    include includes/letsencrypt.conf;
     include includes/ssl.conf;
     include includes/standard-ssl.conf;
 } 

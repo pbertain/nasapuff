@@ -70,7 +70,6 @@ Contains deployment variables:
 Global variables for all hosts:
 - System packages
 - Python dependencies
-- Security settings
 - Nginx configuration
 
 ## Deployment Process
@@ -80,8 +79,7 @@ The deployment will:
 1. **System Setup**
    - Install required packages
    - Create application user (`nasapuff`)
-   - Configure firewall (UFW)
-   - Set up fail2ban
+   - Set up log rotation
 
 2. **Application Deployment**
    - Deploy Flask application
@@ -91,8 +89,8 @@ The deployment will:
 
 3. **Web Server Configuration**
    - Install and configure Nginx
-   - Set up SSL certificates (Let's Encrypt)
    - Configure reverse proxy
+   - Set up security headers
 
 4. **Monitoring Setup**
    - Install monitoring scripts
@@ -118,15 +116,6 @@ curl http://localhost:48080/
 
 # API endpoint
 curl http://localhost:48080/api/apod
-```
-
-### 3. Check SSL Certificate
-```bash
-# Verify SSL certificate
-certbot certificates
-
-# Test SSL renewal
-certbot renew --dry-run
 ```
 
 ## Monitoring and Maintenance
@@ -187,19 +176,7 @@ ls -la /var/backups/nasapuff/
    ls -la /var/bertain-cdn/nasapuff/
    ```
 
-3. **SSL Certificate Issues**
-   ```bash
-   # Check certificate status
-   certbot certificates
-   
-   # Renew certificates
-   certbot renew
-   
-   # Check nginx configuration
-   nginx -t
-   ```
-
-4. **Permission Issues**
+3. **Permission Issues**
    ```bash
    # Fix ownership
    sudo chown -R nasapuff:nasapuff /var/bertain-cdn/nasapuff/
@@ -229,22 +206,17 @@ ls -la /var/backups/nasapuff/
 
 ## Security Considerations
 
-### Firewall Configuration
-- Only ports 22, 80, 443 are open
-- UFW is enabled with deny-by-default policy
-- fail2ban protects against brute force attacks
-
-### SSL/TLS Security
-- Modern cipher suites only
-- HSTS headers enabled
-- OCSP stapling configured
-- Automatic certificate renewal
-
 ### Application Security
 - Non-root user execution
 - Process isolation with systemd
 - Security headers in Nginx
 - Input validation and sanitization
+
+### SSL/TLS Security
+- SSL certificates handled by separate playbook
+- Modern cipher suites configured
+- HSTS headers enabled
+- OCSP stapling configured
 
 ## Updates and Maintenance
 
@@ -272,7 +244,6 @@ Set up monitoring for:
 - Service status
 - Disk space usage
 - Memory usage
-- SSL certificate expiration
 - Backup success/failure
 
 ## Support

@@ -23,7 +23,6 @@
     - common
     - nasapuff_app
     - nginx
-    - ssl
     - monitoring
 
   post_tasks:

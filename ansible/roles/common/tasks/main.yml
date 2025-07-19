@@ -31,36 +31,6 @@
     - "{{ nasapuff_flask_dir }}/public"
     - "{{ nasapuff_flask_dir }}/public/css"
 
-- name: Configure firewall
-  ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop: "{{ security_settings.firewall_ports }}"
-  when: security_settings.ufw_enabled
-
-- name: Enable UFW
-  ufw:
-    state: enabled
-    policy: deny
-  when: security_settings.ufw_enabled
-
-- name: Install fail2ban
-  apt:
-    name: fail2ban
-    state: present
-  when: security_settings.fail2ban_enabled
-
-- name: Configure fail2ban
-  template:
-    src: jail.local.j2
-    dest: /etc/fail2ban/jail.local
-    owner: root
-    group: root
-    mode: '0644'
-  when: security_settings.fail2ban_enabled
-  notify: restart fail2ban
-
 - name: Set up logrotate for application logs
   template:
     src: nasapuff-logrotate.j2
